@@ -1,0 +1,61 @@
+#include <MIDI.h>
+#include <midi_Defs.h>
+#include <midi_Message.h>
+#include <midi_Namespace.h>
+#include <midi_Settings.h>
+
+const int buttonOne = 2; // assign button pin to variable
+const int buttonTwo = 3; // assign button pin to variable
+const int led1Pin    = 4; // Led 1´s pin
+const int led2Pin    = 5; // Led 2´s pin
+int buttonOneState   = 0; // current state of button1
+int buttonTwoState   = 0; // current state of button2
+int lastButtonOneState = 0; // previous stste of button1
+int lastButtonTwoState = 0; // previous stste of button2
+int led1State        = 0; // remember current led1 state
+int led2State        = 0; // remember current led2 state
+
+
+
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial, midiOut); // create a MIDI object called midiOut
+
+void setup() {
+  pinMode(buttonOne, INPUT); // setup button as input
+  pinMode(buttonTwo, INPUT); // setup button as input
+  pinMode(led1Pin, OUTPUT); // setup led pin as output
+  pinMode(led2Pin, OUTPUT); // setup led pin as output
+
+  Serial.begin(31250); // setup MIDI output
+}
+
+void loop() {
+  // read the pushbutton input pin
+  buttonOneState = digitalRead(buttonOne); // check if the button is pressed or released // by comparing the buttonState to its previous state
+  if (buttonOneState != lastButtonOneState) {
+
+    // change the state of the led when someone pressed the button
+    if (buttonOneState == 1) {
+      if (led1State == 1) led1State = 0;
+      midiOut.sendControlChange(2, 10, 0); //Send midi message mute ch9
+    }  else            led1State = 1;
+    midiOut.sendControlChange(2, 10, 127); //send midi message unmute ch9
+    delay(250);
+  }
+  // remember the current state of the button
+  lastButtonOneState = buttonOneState;
+
+  // read the pushbutton input pin
+  buttonTwoState = digitalRead(buttonTwo); // check if the button is pressed or released // by comparing the buttonState to its previous state
+  if (buttonTwoState != lastButtonTwoState) {
+
+    // change the state of the led when someone pressed the button
+    if (buttonTwoState == 1) {
+      if (led2State == 1) led2State = 0;
+      midiOut.sendControlChange(2, 8, 0); //Send midi message mute ch7
+    } else            led2State = 1;
+    midiOut.sendControlChange(2, 8, 127); //send midi message unmute ch7
+    delay(250);
+  }
+  // remember the current state of the button
+  lastButtonTwoState = buttonTwoState;
+}
